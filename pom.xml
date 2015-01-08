@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.appengine-awt</groupId>
 	<artifactId>appengine-awt</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<url>https://github.com/pascalleclercq/appengine-awt</url>
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
@@ -31,6 +31,16 @@
 		<artifactId>commons-vfs</artifactId>
 		<version>2.0-SNAPSHOT</version>
 	</dependency>
+		<dependency>
+			<groupId>com.newatlanta.commons</groupId>
+			<artifactId>gaevfs</artifactId>
+			<version>0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-vfs</artifactId>
+			<version>2.0-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>com.newatlanta.commons</groupId>
 			<artifactId>gaevfs</artifactId>
@@ -72,6 +82,16 @@
 					<instructions>
 						<_snapshot>${osgi-version-qualifier}</_snapshot>
 					</instructions>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<outputDirectory>target</outputDirectory>
+					<finalName>appengine-awt-1.0.1</finalName>
+					<attach>false</attach>
 				</configuration>
 			</plugin>
 		</plugins>
