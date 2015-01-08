@@ -1,0 +1,3 @@
+call mvn install:install-file -Dfile=commons-vfs-2.0-SNAPSHOT.jar -DgroupId=org.apache.commons -DartifactId=commons-vfs -Dversion=2.0-SNAPSHOT -Dpackaging=jar -DgeneratePom=true
+call mvn install:install-file -Dfile=gaevfs-0.3.jar -DgroupId=com.newatlanta.commons -DartifactId=gaevfs -Dversion=0.3 -Dpackaging=jar -DgeneratePom=true
+call mvn install:install-file -Dfile=sfntly-0.0.1-SNAPSHOT.jar -DgroupId=com.github.sfntly -DartifactId=sfntly -Dversion=0.0.1-SNAPSHOT -Dpackaging=jar -DgeneratePom=true
