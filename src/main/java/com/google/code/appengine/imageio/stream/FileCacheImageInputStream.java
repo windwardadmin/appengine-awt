@@ -18,18 +18,24 @@
 
 package com.google.code.appengine.imageio.stream;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 
+import com.newatlanta.commons.vfs.provider.gae.GaeFileObject;
+import com.newatlanta.commons.vfs.provider.gae.GaeFileSystemManager;
+import com.newatlanta.commons.vfs.provider.gae.GaeRandomAccessContent;
+import com.newatlanta.commons.vfs.provider.gae.GaeVFS;
+import org.apache.commons.vfs.FileType;
+import org.apache.commons.vfs.util.RandomAccessMode;
 import org.apache.harmony.x.imageio.internal.nls.Messages;
 
-import com.google.code.appengine.imageio.stream.FileCacheImageOutputStream;
-import com.google.code.appengine.imageio.stream.ImageInputStreamImpl;
 
 public class FileCacheImageInputStream extends ImageInputStreamImpl {
     private InputStream is;
-    private File file;
-    private RandomAccessFile raf;
+    private GaeFileObject file;
+    private GaeRandomAccessContent rac;
 
 
     public FileCacheImageInputStream(InputStream stream, File cacheDir) throws IOException {
@@ -38,55 +44,65 @@ public class FileCacheImageInputStream extends ImageInputStreamImpl {
         }
         is = stream;
 
-        if (cacheDir == null || cacheDir.isDirectory()) {
-            file = File.createTempFile(FileCacheImageOutputStream.IIO_TEMP_FILE_PREFIX, null, cacheDir);
-            file.deleteOnExit();
+        // Retrieve the file system manager
+        GaeFileSystemManager fsManager = GaeVFS.getManager();
+
+        // Convert cacheDir to a FileObject
+        GaeFileObject cacheDirObj = (cacheDir == null) ? null :
+                (GaeFileObject)fsManager.resolveFile(cacheDir.getPath());
+
+        // if cache dir is null, or if it is a directory
+        if (cacheDirObj == null || cacheDirObj.getType() == FileType.FOLDER) {
+
+            // original code:
+            file = FileObjectUtils.createTempFileObject(fsManager,
+                    FileCacheImageOutputStream.IIO_TEMP_FILE_PREFIX, null, cacheDirObj);
         } else {
             throw new IllegalArgumentException(Messages.getString("imageio.0B"));
         }
 
-        raf = new RandomAccessFile(file, "rw");
+        rac = new GaeRandomAccessContent(file, RandomAccessMode.READWRITE);
     }
 
     @Override
     public int read() throws IOException {
         bitOffset = 0;
 
-        if (streamPos >= raf.length()) {
+        if (streamPos >= rac.length()) {
             int b = is.read();
 
             if (b < 0) {
                 return -1;
             }
 
-            raf.seek(streamPos++);
-            raf.write(b);
+            rac.seek(streamPos++);
+            rac.write(b);
             return b;
         }
 
-        raf.seek(streamPos++);
-        return raf.read();
+        rac.seek(streamPos++);
+        return rac.read();
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         bitOffset = 0;
 
-        if (streamPos >= raf.length()) {
+        if (streamPos >= rac.length()) {
             int nBytes = is.read(b, off, len);
 
             if (nBytes < 0) {
                 return -1;
             }
 
-            raf.seek(streamPos);
-            raf.write(b, off, nBytes);
+            rac.seek(streamPos);
+            rac.write(b, off, nBytes);
             streamPos += nBytes;
             return nBytes;
         }
 
-        raf.seek(streamPos);
-        int nBytes = raf.read(b, off, len);
+        rac.seek(streamPos);
+        int nBytes = rac.read(b, off, len);
         streamPos += nBytes;
         return nBytes;
     }
@@ -109,7 +125,7 @@ public class FileCacheImageInputStream extends ImageInputStreamImpl {
     @Override
     public void close() throws IOException {
         super.close();
-        raf.close();
+        rac.close();
         file.delete();
     }
 }
