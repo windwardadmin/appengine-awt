@@ -1,0 +1,30 @@
+====================
+FILE I/O INFORMATION
+====================
+This library has a basic issue: it still uses regular File I/O which is not
+supported on Google App Engine.  As a remedy, we are changing references as 
+needed.
+See com/google/code/appengine/imageio/stream/FileCacheImageInputStream.java
+for an example of a changed reference.
+ 
+ 
+===============
+IMPORTANT NOTES
+===============
+The new file system comes with some quirks.  But it isn't just the file system, it's the entirety of working with files on Google App Engine.
+
+For more information, please read the gae vfs documentation here: https://code.google.com/p/gaevfs/wiki/UsingGaeVFS
+
+Here are the basics.  Since Google App Engine run servlet code, everything discussed here is in the context of servlets (e.g. the init/destroy methods)
+
+1. You must set a root path for the entire servlet to use.  The best place to do this is in the servlet's init method.  You can do this with something like this:
+
+		GaeVFS.setRootPath(getServletContext().getRealPath("/"));
+		
+2. You *should* (in good practice) close GaeVFS in the destroy method:
+
+		GaeVFS.close();
+		
+3. Now, it's important to clear the thread local cache.  All GAE operations should be placed in a try/finally clause with the clear cache operation appearing in the finally clause.  We should investigate putting this somewhere else (such as in the appengine-awt code in destroy code or something) because it seems like a bad practice to require library users (which means OEM customers) to call this in their code.
+
+		GaeVFS.clearFilesCache();
